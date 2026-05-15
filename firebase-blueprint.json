@@ -1,0 +1,36 @@
+{
+  "entities": {
+    "Consultation": {
+      "title": "Consultation Request",
+      "description": "User requested consultation",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "timeRange": { "type": "string" },
+        "inquiry": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["name", "phone", "timeRange", "createdAt"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "Admin privileges",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "maxLength": 100 }
+      },
+      "required": [ "email" ]
+    }
+  },
+  "firestore": {
+    "/consultations/{consultationId}": {
+      "schema": { "$ref": "#/entities/Consultation" },
+      "description": "Stores user consultation requests"
+    },
+    "/admins/{userId}": {
+      "schema": { "$ref": "#/entities/Admin" },
+      "description": "List of admin users"
+    }
+  }
+}

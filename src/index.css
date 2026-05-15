@@ -1,0 +1,173 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Pretendard", ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background-color: #ffffff;
+  color: #111111;
+  overflow-x: hidden;
+  word-break: keep-all;
+}
+
+.accent-blue { color: #0052CC; }
+.bg-accent-blue { background-color: #0052CC; }
+
+.reveal { opacity: 0; }
+
+/* 로딩 화면 스타일 */
+#loader {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: #001A41; display: flex; flex-direction: column;
+    justify-content: center; align-items: center; z-index: 1000; color: white;
+}
+.loader-number { font-size: 8rem; font-weight: 900; letter-spacing: -0.05em; }
+
+/* 이미지 고급 효과 */
+.img-container { position: relative; overflow: visible; display: inline-block; }
+.img-glow-effect {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 100%; height: 100%; background: radial-gradient(circle, rgba(0,82,204,0.4) 0%, rgba(0,82,204,0) 70%);
+    border-radius: 50%; opacity: 0; transition: all 0.8s ease; z-index: -1;
+}
+.img-container:hover .img-glow-effect { opacity: 1; transform: translate(-50%, -50%) scale(1.5); }
+.img-container img { transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+.img-container:hover img { transform: scale(1.08); }
+
+/* 배경 3D 에셋 효과 */
+.bg-shape {
+    position: fixed; width: 300px; height: 300px;
+    z-index: -1; pointer-events: none;
+    opacity: 0.25;
+}
+
+.floating-3d {
+    animation: float3d 8s ease-in-out infinite;
+}
+
+@keyframes float3d {
+    0% { transform: translateY(0) rotate(-5deg) scale(1); filter: drop-shadow(0 20px 40px rgba(0, 82, 204, 0.8)) brightness(1); }
+    50% { transform: translateY(-40px) rotate(5deg) scale(1.05); filter: drop-shadow(0 50px 60px rgba(0, 82, 204, 1)) brightness(1.3); }
+    100% { transform: translateY(0) rotate(-5deg) scale(1); filter: drop-shadow(0 20px 40px rgba(0, 82, 204, 0.8)) brightness(1); }
+}
+
+.bg-shape-img {
+    width: 100%; height: 100%; object-fit: contain;
+}
+
+/* 굵은 밑줄 강조 */
+.thick-underline {
+    box-shadow: inset 0 -12px 0 rgba(0, 82, 204, 0.2);
+    font-weight: 800;
+}
+
+/* 마우스 커서 */
+@media (pointer: fine) {
+  .cursor-dot {
+    width: 6px; height: 6px; background: #0052CC;
+    position: fixed; top: 0; left: 0; border-radius: 50%;
+    pointer-events: none; z-index: 9999;
+  }
+}
+
+/* 흐르는 텍스트 애니메이션 */
+.marquee-container {
+  display: flex; white-space: nowrap; animation: marquee 25s linear infinite;
+}
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes wave-flag {
+  0% { transform: perspective(500px) rotateY(0deg) skewY(0deg); }
+  50% { transform: perspective(500px) rotateY(-20deg) skewY(3deg); }
+  100% { transform: perspective(500px) rotateY(0deg) skewY(0deg); }
+}
+
+.waving-flag {
+  transform-origin: left center;
+  animation: wave-flag 1.2s ease-in-out infinite;
+  box-shadow: 3px 5px 15px rgba(0,0,0,0.15);
+  border-radius: 2px;
+}
+
+@keyframes fast-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes normal-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.animate-fast-blink {
+  animation: fast-blink 1s ease-in-out infinite;
+}
+
+.animate-normal-blink {
+  animation: normal-blink 1s ease-in-out infinite;
+}
+
+@keyframes taegeuk-red {
+  0% { stroke-dashoffset: 180; fill: transparent; opacity: 0; }
+  5% { stroke-dashoffset: 180; fill: transparent; opacity: 1; }
+  35% { stroke-dashoffset: 0; fill: transparent; opacity: 1; }
+  45% { stroke-dashoffset: 0; fill: #CD2E3A; opacity: 1; }
+  90% { stroke-dashoffset: 0; fill: #CD2E3A; opacity: 1; }
+  100% { stroke-dashoffset: 0; fill: transparent; opacity: 0; }
+}
+
+@keyframes taegeuk-blue {
+  0% { stroke-dashoffset: 180; fill: transparent; opacity: 0; }
+  15% { stroke-dashoffset: 180; fill: transparent; opacity: 1; }
+  45% { stroke-dashoffset: 0; fill: transparent; opacity: 1; }
+  55% { stroke-dashoffset: 0; fill: #0047A0; opacity: 1; }
+  90% { stroke-dashoffset: 0; fill: #0047A0; opacity: 1; }
+  100% { stroke-dashoffset: 0; fill: transparent; opacity: 0; }
+}
+
+@keyframes taegeuk-red-shadow {
+  0% { stroke-dashoffset: 180; opacity: 0; }
+  5% { stroke-dashoffset: 180; opacity: 0.7; }
+  35% { stroke-dashoffset: 0; opacity: 0.7; }
+  90% { stroke-dashoffset: 0; opacity: 0.7; }
+  100% { stroke-dashoffset: 0; opacity: 0; }
+}
+
+@keyframes taegeuk-blue-shadow {
+  0% { stroke-dashoffset: 180; opacity: 0; }
+  15% { stroke-dashoffset: 180; opacity: 0.7; }
+  45% { stroke-dashoffset: 0; opacity: 0.7; }
+  90% { stroke-dashoffset: 0; opacity: 0.7; }
+  100% { stroke-dashoffset: 0; opacity: 0; }
+}
+
+.taegeuk-path-red {
+  stroke-dasharray: 180;
+  stroke-dashoffset: 180;
+  animation: taegeuk-red 6s ease-in-out infinite;
+}
+
+.taegeuk-path-blue {
+  stroke-dasharray: 180;
+  stroke-dashoffset: 180;
+  animation: taegeuk-blue 6s ease-in-out infinite;
+}
+
+.taegeuk-shadow-red {
+  stroke-dasharray: 180;
+  stroke-dashoffset: 180;
+  animation: taegeuk-red-shadow 6s ease-in-out infinite;
+}
+
+.taegeuk-shadow-blue {
+  stroke-dasharray: 180;
+  stroke-dashoffset: 180;
+  animation: taegeuk-blue-shadow 6s ease-in-out infinite;
+}
+
+
