@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { collection, getDocs, deleteDoc, doc, query } from 'firebase/firestore';
-import { signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'firebase/auth';
+import { signInWithRedirect, GoogleAuthProvider, signOut, onAuthStateChanged, getRedirectResult } from 'firebase/auth';
 import { auth, db } from './lib/firebase';
 import { LogOut, Trash2, X } from 'lucide-react';
 
@@ -37,18 +37,22 @@ export function AdminModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
     }
   }, [isOpen, user]);
 
-  const handleLogin = async () => {
-    try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-    } catch (err: any) {
-      console.error(err);
-      if (err.code === 'auth/popup-blocked' || err.code === 'auth/unauthorized-domain' || err.code === 'auth/network-request-failed') {
-        setError('팝업이 차단되었거나 네트워크 오류가 발생했습니다. 우측 상단의 새 창 열기(↗️) 버튼을 눌러 새 창에서 시도해주세요.');
-      } else {
-        setError(`로그인에 실패했습니다: ${err.message}`);
-      }
-    }
+  useEffect(() => {
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result) {
+          console.log("관리자 로그인 성공:", result.user.email);
+        }
+      })
+      .catch((err) => {
+        console.error("로그인 에러 발생:", err.message);
+        setError("로그인 중 오류가 발생했습니다: " + err.message);
+      });
+  }, []);
+
+  const handleLogin = () => {
+    const provider = new GoogleAuthProvider();
+    signInWithRedirect(auth, provider);
   };
 
   const handleLogout = async () => {

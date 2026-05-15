@@ -3,7 +3,8 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowRight, CheckCircle2, ShieldCheck, X, Loader2 } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from './lib/firebase';
+import { getRedirectResult } from 'firebase/auth';
+import { db, auth } from './lib/firebase';
 import { AdminModal } from './AdminModal';
 import { ReviewSection } from './ReviewSection';
 import confetti from 'canvas-confetti';
@@ -22,6 +23,18 @@ export default function App() {
     timeRange: '10:00 - 11:00',
     inquiry: ''
   });
+
+  useEffect(() => {
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result) {
+          setIsAdminOpen(true);
+        }
+      })
+      .catch((error) => {
+        console.error("Redirect login error:", error);
+      });
+  }, []);
 
   const timeOptions = Array.from({ length: 24 }, (_, i) => {
     const hour = i.toString().padStart(2, '0');
