@@ -112,6 +112,7 @@ export default function App() {
       window.addEventListener('scroll', onScroll);
 
       function startMainAnimations() {
+          document.querySelector('.svg-taegeuk')?.classList.add('taegeuk-active');
           const reveals = gsap.utils.toArray('.reveal');
           reveals.forEach((el: any) => {
               gsap.fromTo(el, 
@@ -134,12 +135,12 @@ export default function App() {
           titleWrappers.forEach((wrapper: any) => {
               const chars = wrapper.querySelectorAll('.title-char');
               gsap.fromTo(chars, 
-                  { opacity: 0, y: 20 },
+                  { opacity: 0, y: 30 },
                   {
                       opacity: 1, y: 0,
-                      duration: 0.6,
-                      stagger: 0.04,
-                      ease: "back.out(1.5)",
+                      duration: 0.8,
+                      stagger: 0.15, // Slower stagger for impact
+                      ease: "power3.out", // Adjusted ease for impact
                       scrollTrigger: { trigger: wrapper, start: "top 85%" }
                   }
               );
@@ -234,7 +235,7 @@ export default function App() {
       <section className="relative min-h-[75vh] flex flex-col justify-center items-center px-6 overflow-hidden pt-12 pb-48">
         <div className="max-w-6xl w-full text-center flex flex-col items-center">
           <div className="relative mb-0 w-[14rem] h-[14rem] md:w-[20rem] md:h-[20rem] lg:w-[26rem] lg:h-[26rem] reveal lg:-mb-6 flex items-center justify-center">
-            <svg viewBox="-20 -20 140 140" xmlns="http://www.w3.org/2000/svg" className="w-[120%] h-[120%] -rotate-90">
+            <svg viewBox="-20 -20 140 140" xmlns="http://www.w3.org/2000/svg" className="svg-taegeuk w-[120%] h-[120%] -rotate-90">
               <defs>
                 <filter id="brush-texture">
                   <feTurbulence type="fractalNoise" baseFrequency="0.08" numOctaves="3" result="noise" />

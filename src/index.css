@@ -146,27 +146,24 @@ body {
   100% { stroke-dashoffset: 0; opacity: 0; }
 }
 
-.taegeuk-path-red {
+.taegeuk-path-red, .taegeuk-path-blue, .taegeuk-shadow-red, .taegeuk-shadow-blue {
   stroke-dasharray: 260;
   stroke-dashoffset: 260;
+}
+
+.taegeuk-active .taegeuk-path-red {
   animation: taegeuk-red 6s ease-in-out infinite;
 }
 
-.taegeuk-path-blue {
-  stroke-dasharray: 260;
-  stroke-dashoffset: 260;
+.taegeuk-active .taegeuk-path-blue {
   animation: taegeuk-blue 6s ease-in-out infinite;
 }
 
-.taegeuk-shadow-red {
-  stroke-dasharray: 260;
-  stroke-dashoffset: 260;
+.taegeuk-active .taegeuk-shadow-red {
   animation: taegeuk-red-shadow 6s ease-in-out infinite;
 }
 
-.taegeuk-shadow-blue {
-  stroke-dasharray: 260;
-  stroke-dashoffset: 260;
+.taegeuk-active .taegeuk-shadow-blue {
   animation: taegeuk-blue-shadow 6s ease-in-out infinite;
 }
 

@@ -37,19 +37,6 @@ export function AdminModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
     }
   }, [isOpen, user]);
 
-  useEffect(() => {
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result) {
-          console.log("관리자 로그인 성공:", result.user.email);
-        }
-      })
-      .catch((err) => {
-        console.error("로그인 에러 발생:", err.message);
-        setError("로그인 중 오류가 발생했습니다: " + err.message);
-      });
-  }, []);
-
   const handleLogin = () => {
     const provider = new GoogleAuthProvider();
     signInWithRedirect(auth, provider);
@@ -77,10 +64,10 @@ export function AdminModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
       setError('');
     } catch (err: any) {
       console.error(err);
-      if (err.message.includes('permission')) {
-        setError('권한이 없습니다. 등록된 관리자 계정으로 로그인해주세요.');
+      if (err.message && err.message.includes('permission')) {
+        setError(`권한이 없습니다 (이메일 불일치 등). 에러: ${err.message}`);
       } else {
-        setError('데이터를 불러오는데 실패했습니다.');
+        setError(`데이터를 불러오는데 실패했습니다. 에러: ${err.message}`);
       }
     } finally {
       setLoading(false);
