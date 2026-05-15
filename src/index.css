@@ -113,8 +113,8 @@ body {
 }
 
 @keyframes taegeuk-red {
-  0% { stroke-dashoffset: 180; fill: transparent; opacity: 0; }
-  5% { stroke-dashoffset: 180; fill: transparent; opacity: 1; }
+  0% { stroke-dashoffset: 260; fill: transparent; opacity: 0; }
+  5% { stroke-dashoffset: 260; fill: transparent; opacity: 1; }
   35% { stroke-dashoffset: 0; fill: transparent; opacity: 1; }
   45% { stroke-dashoffset: 0; fill: #CD2E3A; opacity: 1; }
   90% { stroke-dashoffset: 0; fill: #CD2E3A; opacity: 1; }
@@ -122,8 +122,8 @@ body {
 }
 
 @keyframes taegeuk-blue {
-  0% { stroke-dashoffset: 180; fill: transparent; opacity: 0; }
-  15% { stroke-dashoffset: 180; fill: transparent; opacity: 1; }
+  0% { stroke-dashoffset: 260; fill: transparent; opacity: 0; }
+  15% { stroke-dashoffset: 260; fill: transparent; opacity: 1; }
   45% { stroke-dashoffset: 0; fill: transparent; opacity: 1; }
   55% { stroke-dashoffset: 0; fill: #0047A0; opacity: 1; }
   90% { stroke-dashoffset: 0; fill: #0047A0; opacity: 1; }
@@ -131,42 +131,42 @@ body {
 }
 
 @keyframes taegeuk-red-shadow {
-  0% { stroke-dashoffset: 180; opacity: 0; }
-  5% { stroke-dashoffset: 180; opacity: 0.7; }
+  0% { stroke-dashoffset: 260; opacity: 0; }
+  5% { stroke-dashoffset: 260; opacity: 0.7; }
   35% { stroke-dashoffset: 0; opacity: 0.7; }
   90% { stroke-dashoffset: 0; opacity: 0.7; }
   100% { stroke-dashoffset: 0; opacity: 0; }
 }
 
 @keyframes taegeuk-blue-shadow {
-  0% { stroke-dashoffset: 180; opacity: 0; }
-  15% { stroke-dashoffset: 180; opacity: 0.7; }
+  0% { stroke-dashoffset: 260; opacity: 0; }
+  15% { stroke-dashoffset: 260; opacity: 0.7; }
   45% { stroke-dashoffset: 0; opacity: 0.7; }
   90% { stroke-dashoffset: 0; opacity: 0.7; }
   100% { stroke-dashoffset: 0; opacity: 0; }
 }
 
 .taegeuk-path-red {
-  stroke-dasharray: 180;
-  stroke-dashoffset: 180;
+  stroke-dasharray: 260;
+  stroke-dashoffset: 260;
   animation: taegeuk-red 6s ease-in-out infinite;
 }
 
 .taegeuk-path-blue {
-  stroke-dasharray: 180;
-  stroke-dashoffset: 180;
+  stroke-dasharray: 260;
+  stroke-dashoffset: 260;
   animation: taegeuk-blue 6s ease-in-out infinite;
 }
 
 .taegeuk-shadow-red {
-  stroke-dasharray: 180;
-  stroke-dashoffset: 180;
+  stroke-dasharray: 260;
+  stroke-dashoffset: 260;
   animation: taegeuk-red-shadow 6s ease-in-out infinite;
 }
 
 .taegeuk-shadow-blue {
-  stroke-dasharray: 180;
-  stroke-dashoffset: 180;
+  stroke-dasharray: 260;
+  stroke-dashoffset: 260;
   animation: taegeuk-blue-shadow 6s ease-in-out infinite;
 }
 
