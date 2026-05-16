@@ -22,11 +22,12 @@ service cloud.firestore {
 
     function isValidConsultation(data) {
       return data.keys().hasAll(['name', 'phone', 'timeRange', 'createdAt']) &&
-             data.keys().size() <= 6 &&
+             data.keys().size() <= 7 &&
              data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
              data.phone is string && data.phone.size() > 0 && data.phone.size() <= 20 &&
              data.timeRange is string && data.timeRange.size() > 0 && data.timeRange.size() <= 100 &&
              (data.get('inquiry', '') is string && data.get('inquiry', '').size() <= 2000) &&
+             (data.get('status', 'pending') in ['pending', 'completed']) &&
              data.createdAt == request.time;
     }
 
@@ -35,7 +36,12 @@ service cloud.firestore {
       allow get: if isAdmin() && isValidId(consultationId);
       allow list: if isAdmin();
       allow delete: if isAdmin() && isValidId(consultationId);
-      allow update: if false; // Consultations cannot be updated
+      allow update: if (
+        isAdmin() && 
+        isValidId(consultationId) && 
+        incoming().diff(existing()).affectedKeys().hasOnly(['status']) &&
+        incoming().status in ['pending', 'completed']
+      );
     }
 
     match /admins/{userId} {

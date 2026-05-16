@@ -53,6 +53,7 @@ export default function App() {
         phone: formData.phone,
         timeRange: formData.timeRange,
         inquiry: formData.inquiry || '',
+        status: 'pending',
         createdAt: serverTimestamp()
       });
       alert('성공적으로 접수되었습니다. 순차적으로 연락드리겠습니다.');

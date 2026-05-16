@@ -9,6 +9,7 @@
         "phone": { "type": "string" },
         "timeRange": { "type": "string" },
         "inquiry": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "completed"] },
         "createdAt": { "type": "string" }
       },
       "required": ["name", "phone", "timeRange", "createdAt"]
