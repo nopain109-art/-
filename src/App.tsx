@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowRight, CheckCircle2, ShieldCheck, X, Loader2 } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { getRedirectResult, onAuthStateChanged } from 'firebase/auth'; // 추가됨
 import { db, auth } from './lib/firebase';
 import emailjs from '@emailjs/browser';
 import { AdminModal } from './AdminModal';
@@ -18,12 +19,59 @@ export default function App() {
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [isAuthChecking, setIsAuthChecking] = useState(true); // 인증 상태 대기용 추가
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
     timeRange: '10:00 - 11:00',
     inquiry: ''
   });
+
+  const adminEmail = "nopain109@gmail.com"; // 관리자 이메일 지정
+
+  // [추가된 로직] 로그인 후 리디렉션 감지 및 세션 유지 상태 처리
+  useEffect(() => {
+    let isMounted = true;
+
+    // 1. 구글 리디렉션 로그인 결과 확인 및 상세 에러 진단
+    getRedirectResult(auth)
+      .then((result) => {
+        if (!isMounted) return;
+        
+        if (result && result.user) {
+          if (result.user.email === adminEmail) {
+            setIsAdminOpen(true);
+          } else {
+            alert("관리자 권한이 없는 계정입니다: " + result.user.email);
+          }
+        }
+      })
+      .catch((error: any) => {
+        console.error("Firebase Auth Error 상세:", error);
+        // 실패 원인을 브라우저 알림창으로 강제 표시
+        alert(`🚨 로그인 실패 분석\n- 에러 코드: ${error.code}\n- 에러 메시지: ${error.message}\n\n이 메시지를 캡처하거나 알려주시면 바로 해결해 드릴게요!`);
+      })
+      .finally(() => {
+        if (isMounted) setIsAuthChecking(false);
+      });
+
+    // 2. 새로고침 및 기존 세션 로그인 상태 유지 감지
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!isMounted) return;
+      
+      if (user) {
+        if (user.email === adminEmail) {
+          setIsAdminOpen(true);
+        }
+      }
+      setIsAuthChecking(false);
+    });
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
+  }, []);
 
   const timeOptions = Array.from({ length: 24 }, (_, i) => {
     const hour = i.toString().padStart(2, '0');
@@ -228,7 +276,9 @@ export default function App() {
           <a href="#about" className="hidden md:block hover:text-blue-900 transition-colors">차별화된 전문성</a>
           <a href="#vision" className="hidden md:block hover:text-blue-900 transition-colors">설계 철학</a>
           <button onClick={openModal} className="hidden md:block transition-colors bg-blue-600 text-white rounded-full px-5 py-2 hover:bg-blue-700 shadow-md">상담 신청</button>
-          <button onClick={() => setIsAdminOpen(true)} className="whitespace-nowrap hidden md:block text-gray-400 hover:text-gray-600 transition-colors">관리자 메뉴</button>
+          <button onClick={() => setIsAdminOpen(true)} className="whitespace-nowrap hidden md:block text-gray-400 hover:text-gray-600 transition-colors">
+            {isAuthChecking ? '확인 중...' : '관리자 메뉴'}
+          </button>
         </div>
       </nav>
 
@@ -535,63 +585,63 @@ export default function App() {
                 </div>
                 
                 <form onSubmit={handleConsultationSubmit} className="space-y-5">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1.5">이름 *</label>
-                <input 
-                  type="text" 
-                  required
-                  maxLength={100}
-                  value={formData.name}
-                  onChange={e => setFormData({...formData, name: e.target.value})}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none transition-all placeholder:text-gray-300"
-                  placeholder="홍길동"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1.5">연락처 *</label>
-                <input 
-                  type="tel" 
-                  required
-                  maxLength={20}
-                  value={formData.phone}
-                  onChange={e => setFormData({...formData, phone: e.target.value})}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none transition-all placeholder:text-gray-300"
-                  placeholder="010-0000-0000"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1.5">상담 가능 시간 *</label>
-                <select 
-                  value={formData.timeRange}
-                  onChange={e => setFormData({...formData, timeRange: e.target.value})}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none transition-all bg-white"
-                >
-                  {timeOptions.map(time => (
-                    <option key={time} value={time}>{time}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1.5">문의사항</label>
-                <textarea 
-                  rows={4}
-                  maxLength={2000}
-                  value={formData.inquiry}
-                  onChange={e => setFormData({...formData, inquiry: e.target.value})}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none transition-all resize-none placeholder:text-gray-300"
-                  placeholder="현재 가입되어 있는 보험 점검 및 암보험 리모델링 문의드립니다."
-                />
-              </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1.5">이름 *</label>
+                    <input 
+                      type="text" 
+                      required
+                      maxLength={100}
+                      value={formData.name}
+                      onChange={e => setFormData({...formData, name: e.target.value})}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none transition-all placeholder:text-gray-300"
+                      placeholder="홍길동"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1.5">연락처 *</label>
+                    <input 
+                      type="tel" 
+                      required
+                      maxLength={20}
+                      value={formData.phone}
+                      onChange={e => setFormData({...formData, phone: e.target.value})}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none transition-all placeholder:text-gray-300"
+                      placeholder="010-0000-0000"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1.5">상담 가능 시간 *</label>
+                    <select 
+                      value={formData.timeRange}
+                      onChange={e => setFormData({...formData, timeRange: e.target.value})}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none transition-all bg-white"
+                    >
+                      {timeOptions.map(time => (
+                        <option key={time} value={time}>{time}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1.5">문의사항</label>
+                    <textarea 
+                      rows={4}
+                      maxLength={2000}
+                      value={formData.inquiry}
+                      onChange={e => setFormData({...formData, inquiry: e.target.value})}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none transition-all resize-none placeholder:text-gray-300"
+                      placeholder="현재 가입되어 있는 보험 점검 및 암보험 리모델링 문의드립니다."
+                    />
+                  </div>
 
-              <button 
-                type="submit" 
-                disabled={isSubmitting}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg py-4 rounded-xl transition-colors mt-2 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> : '상담 신청하기'}
-              </button>
-            </form>
-            </>
+                  <button 
+                    type="submit" 
+                    disabled={isSubmitting}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg py-4 rounded-xl transition-colors mt-2 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> : '상담 신청하기'}
+                  </button>
+                </form>
+              </>
             )}
           </div>
         </div>
