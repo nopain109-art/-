@@ -3,7 +3,6 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowRight, CheckCircle2, ShieldCheck, X, Loader2 } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { getRedirectResult } from 'firebase/auth';
 import { db, auth } from './lib/firebase';
 import { AdminModal } from './AdminModal';
 import { ReviewSection } from './ReviewSection';
@@ -23,23 +22,6 @@ export default function App() {
     timeRange: '10:00 - 11:00',
     inquiry: ''
   });
-
-  useEffect(() => {
-    if (sessionStorage.getItem('admin_modal_open') === 'true') {
-      setIsAdminOpen(true);
-      sessionStorage.removeItem('admin_modal_open');
-    }
-
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result) {
-          setIsAdminOpen(true);
-        }
-      })
-      .catch((error) => {
-        console.error("Redirect login error:", error);
-      });
-  }, []);
 
   const timeOptions = Array.from({ length: 24 }, (_, i) => {
     const hour = i.toString().padStart(2, '0');
@@ -144,8 +126,8 @@ export default function App() {
                   { opacity: 0, y: 30 },
                   {
                       opacity: 1, y: 0,
-                      duration: 0.8,
-                      stagger: 0.15, // Slower stagger for impact
+                      duration: 0.4,
+                      stagger: 0.04, // Faster stagger for impact
                       ease: "power3.out", // Adjusted ease for impact
                       scrollTrigger: { trigger: wrapper, start: "top 85%" }
                   }

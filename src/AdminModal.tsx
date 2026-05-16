@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { collection, getDocs, deleteDoc, doc, query, updateDoc } from 'firebase/firestore';
-import { signInWithRedirect, GoogleAuthProvider, signOut, onAuthStateChanged, getRedirectResult } from 'firebase/auth';
+import { signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from './lib/firebase';
 import { LogOut, Trash2, X, CheckCircle, Circle } from 'lucide-react';
 
@@ -19,6 +19,7 @@ export function AdminModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -38,10 +39,18 @@ export function AdminModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
     }
   }, [isOpen, user]);
 
-  const handleLogin = () => {
-    sessionStorage.setItem('admin_modal_open', 'true');
-    const provider = new GoogleAuthProvider();
-    signInWithRedirect(auth, provider);
+  const handleLogin = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+    } catch (err: any) {
+      console.error(err);
+      if (err.code === 'auth/popup-blocked' || err.code === 'auth/unauthorized-domain') {
+        setError('팝업이 차단되었습니다. 우측 상단의 "새 탭에서 열기(↗️)" 버튼을 눌러 새 창에서 관리자 로그인을 시도해주세요.');
+      } else {
+        setError(`로그인에 실패했습니다: ${err.message}`);
+      }
+    }
   };
 
   const handleLogout = async () => {
@@ -78,13 +87,18 @@ export function AdminModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!window.confirm('정말 삭제하시겠습니까?')) return;
+    if (confirmDeleteId !== id) {
+      setConfirmDeleteId(id);
+      return;
+    }
+    
     try {
       await deleteDoc(doc(db, 'consultations', id));
       setConsultations(prev => prev.filter(c => c.id !== id));
-    } catch (err) {
+      setConfirmDeleteId(null);
+    } catch (err: any) {
       console.error(err);
-      alert('삭제 실패');
+      setError(`삭제 실패: ${err.message}`);
     }
   };
 
@@ -98,9 +112,9 @@ export function AdminModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
       setConsultations(prev => prev.map(c => 
         c.id === id ? { ...c, status: newStatus } : c
       ));
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert('상태 변경 적용 중 오류가 발생했습니다.');
+      setError(`상태 변경 적용 중 오류가 발생했습니다: ${err.message}`);
     }
   };
 
@@ -195,9 +209,17 @@ export function AdminModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                         {formatDate(c.createdAt)}
                       </td>
                       <td className="p-4 text-right">
-                        <button onClick={(e) => handleDelete(c.id, e)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100">
-                          <Trash2 className="w-5 h-5" />
-                        </button>
+                        {confirmDeleteId === c.id ? (
+                          <div className="flex items-center justify-end gap-2">
+                            <span className="text-xs text-red-500 font-bold">진짜 삭제?</span>
+                            <button onClick={(e) => handleDelete(c.id, e)} className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700">확인</button>
+                            <button onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(null); }} className="px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded hover:bg-gray-300">취소</button>
+                          </div>
+                        ) : (
+                          <button onClick={(e) => handleDelete(c.id, e)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100">
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))
