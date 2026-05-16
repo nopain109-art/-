@@ -1,14 +1,3 @@
-아하, 제가 오해했네요! 코드 안에 관리자 이메일 주소를 직접 넣어서 완성해 달라는 말씀이셨군요. 😉
-
-nopain109@gmail.com 주소를 코드 내 두 군데의 adminEmail 변수에 정확히 반영한 최종 전체 코드입니다.
-
-1. 깃허브 수정 화면 바로가기
-👉 App.tsx 파일 수정하러 가기 (클릭)
-
-2. 이메일이 반영된 App.tsx 전체 코드
-아래 코드를 통째로 복사해서 깃허브 창에 덮어씌우시면 됩니다!
-
-TypeScript
 import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
