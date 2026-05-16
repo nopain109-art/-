@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { collection, getDocs, deleteDoc, doc, query, updateDoc } from 'firebase/firestore';
-import { signInWithRedirect, GoogleAuthProvider, signOut, onAuthStateChanged, getRedirectResult } from 'firebase/auth';
+import { collection, deleteDoc, doc, query, updateDoc, orderBy, onSnapshot } from 'firebase/firestore';
+import { signOut, onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from './lib/firebase';
 import { LogOut, Trash2, X, CheckCircle, Circle } from 'lucide-react';
 
@@ -20,73 +20,66 @@ export function AdminModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // 1. 로그인 상태 감지
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      if (currentUser && isOpen) {
-        fetchConsultations();
-      } else {
+      if (!currentUser) {
         setLoading(false);
       }
     });
     return () => unsubscribe();
-  }, [isOpen]);
+  }, []);
 
+  // 2. [실시간 연동 업그레이드] 실시간으로 DB를 감시하여 새로고침 없이 내역을 띄웁니다.
   useEffect(() => {
-    if (isOpen && user) {
-      fetchConsultations();
-    }
-  }, [isOpen, user]);
+    if (!isOpen || !user) return;
 
-  const handleLogin = () => {
-    const provider = new GoogleAuthProvider();
-    signInWithRedirect(auth, provider);
-  };
-
-  const handleLogout = async () => {
-    await signOut(auth);
-    setConsultations([]);
-  };
-
-  const fetchConsultations = async () => {
     setLoading(true);
-    try {
-      const q = query(collection(db, 'consultations'));
-      const snapshot = await getDocs(q);
+    // 최신 접수글이 맨 위로 오도록 정렬(createdAt, desc)
+    const q = query(collection(db, 'consultations'), orderBy('createdAt', 'desc'));
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       const data: Consultation[] = [];
       snapshot.forEach(doc => {
         data.push({ id: doc.id, ...doc.data() } as Consultation);
       });
-      data.sort((a, b) => {
-        if (!a.createdAt || !b.createdAt) return 0;
-        return b.createdAt.toMillis() - a.createdAt.toMillis();
-      });
       setConsultations(data);
       setError('');
-    } catch (err: any) {
+      setLoading(false);
+    }, (err: any) => {
       console.error(err);
       if (err.message && err.message.includes('permission')) {
-        setError(`권한이 없습니다 (이메일 불일치 등). 에러: ${err.message}`);
+        setError(`권한이 없습니다 (파이어베이스 Rules 이메일 권한 설정 확인 필요).`);
       } else {
-        setError(`데이터를 불러오는데 실패했습니다. 에러: ${err.message}`);
+        setError(`데이터를 불러오는데 실패했습니다: ${err.message}`);
       }
-    } finally {
       setLoading(false);
-    }
+    });
+
+    return () => unsubscribe();
+  }, [isOpen, user]);
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    setConsultations([]);
+    onClose(); // 로그아웃 시 창 닫기
   };
 
-  const handleDelete = async (id: string, e: React.MouseEvent) => {
+  // 3. 삭제 기능
+  const handleDelete = async (id: string, name: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!window.confirm('정말 삭제하시겠습니까?')) return;
+    if (!window.confirm(`${name} 고객님의 상담 내역을 정말 삭제하시겠습니까?\n삭제된 데이터는 복구할 수 없습니다.`)) return;
     try {
       await deleteDoc(doc(db, 'consultations', id));
-      setConsultations(prev => prev.filter(c => c.id !== id));
+      alert("삭제되었습니다.");
     } catch (err) {
       console.error(err);
       alert('삭제 실패');
     }
   };
 
+  // 4. 완료/대기 토글 기능
   const handleToggleStatus = async (id: string, currentStatus: string | undefined, e: React.MouseEvent) => {
     e.stopPropagation();
     const newStatus = currentStatus === 'completed' ? 'pending' : 'completed';
@@ -94,15 +87,13 @@ export function AdminModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
       await updateDoc(doc(db, 'consultations', id), {
         status: newStatus
       });
-      setConsultations(prev => prev.map(c => 
-        c.id === id ? { ...c, status: newStatus } : c
-      ));
     } catch (err) {
       console.error(err);
-      alert('상태 변경 적용 중 오류가 발생했습니다.');
+      alert('상태 변경 중 오류가 발생했습니다.');
     }
   };
 
+  // 5. 접수 시간 이쁘게 바꾸는 함수 (기존 유지)
   const formatDate = (timestamp: any) => {
     if (!timestamp) return '';
     const date = new Date(timestamp.toMillis());
@@ -120,7 +111,7 @@ export function AdminModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
         </button>
 
         <div className="flex justify-between items-center mb-8 pr-8">
-          <h2 className="text-3xl font-black text-gray-900 tracking-tight">상담 예약 내역</h2>
+          <h2 className="text-3xl font-black text-gray-900 tracking-tight">상담 예약 DB 관리자 모드</h2>
           {user && (
             <button onClick={handleLogout} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium px-4 py-2 rounded-lg hover:bg-gray-100 transition">
               <LogOut className="w-5 h-5" />
@@ -136,13 +127,10 @@ export function AdminModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
             <div className="bg-blue-50 text-blue-800 p-4 rounded-full mb-6">
               <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
             </div>
-            <h3 className="text-xl font-bold mb-2">관리자 전용 페이지입니다</h3>
-            <p className="text-gray-500 mb-8 text-center max-w-sm">
-              상담 예약 내역을 확인하고 관리하려면 관리자 계정으로 로그인해주세요.
+            <h3 className="text-xl font-bold mb-2">접근 권한이 없습니다</h3>
+            <p className="text-gray-500 mb-4 text-center max-w-sm">
+              로그인을 다시 시도하거나 메인 화면에서 관리자 계정으로 로그인해 주세요.
             </p>
-            <button onClick={handleLogin} className="bg-gray-900 text-white font-bold px-8 py-4 rounded-xl hover:bg-gray-800 transition-all shadow-lg hover:shadow-xl hover:-translate-y-1">
-              Google 계정으로 로그인
-            </button>
           </div>
         ) : loading ? (
           <div className="flex-1 flex items-center justify-center">
@@ -169,7 +157,7 @@ export function AdminModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                   </tr>
                 ) : (
                   consultations.map(c => (
-                    <tr key={c.id} className={`hover:bg-blue-50/50 transition-colors group ${c.status === 'completed' ? 'opacity-60 bg-gray-50' : ''}`}>
+                    <tr key={c.id} className={`hover:bg-blue-50/50 transition-colors group ${c.status === 'completed' ? 'opacity-50 bg-gray-50' : ''}`}>
                       <td className="p-4">
                         <button 
                           onClick={(e) => handleToggleStatus(c.id, c.status, e)}
@@ -182,7 +170,7 @@ export function AdminModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                           )}
                         </button>
                       </td>
-                      <td className="p-4 font-bold text-gray-900 whitespace-nowrap">{c.name}</td>
+                      <td className={`p-4 font-bold text-gray-900 whitespace-nowrap ${c.status === 'completed' ? 'line-through text-gray-400' : ''}`}>{c.name}</td>
                       <td className="p-4 font-mono text-gray-600 whitespace-nowrap">{c.phone}</td>
                       <td className="p-4">
                         <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 whitespace-nowrap">
@@ -194,7 +182,7 @@ export function AdminModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
                         {formatDate(c.createdAt)}
                       </td>
                       <td className="p-4 text-right">
-                        <button onClick={(e) => handleDelete(c.id, e)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100">
+                        <button onClick={(e) => handleDelete(c.id, c.name, e)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100">
                           <Trash2 className="w-5 h-5" />
                         </button>
                       </td>
