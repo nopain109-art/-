@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { collection, deleteDoc, doc, query, updateDoc, orderBy, onSnapshot } from 'firebase/firestore';
-import { signOut, onAuthStateChanged } from 'firebase/auth';
+import { signOut, onAuthStateChanged, GoogleAuthProvider, signInWithRedirect } from 'firebase/auth';
 import { auth, db } from './lib/firebase';
 import { LogOut, Trash2, X, CheckCircle, Circle } from 'lucide-react';
 
@@ -20,23 +20,20 @@ export function AdminModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // 1. 로그인 상태 감지
+  // 1. 로그인 상태 감지 (로딩 상태를 정확히 체크합니다)
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      if (!currentUser) {
-        setLoading(false);
-      }
+      setLoading(false); // 구글 로그인 확인이 끝난 후에 로딩을 끕니다.
     });
     return () => unsubscribe();
   }, []);
 
-  // 2. [실시간 연동 업그레이드] 실시간으로 DB를 감시하여 새로고침 없이 내역을 띄웁니다.
+  // 2. 실시간 DB 연동
   useEffect(() => {
     if (!isOpen || !user) return;
 
     setLoading(true);
-    // 최신 접수글이 맨 위로 오도록 정렬(createdAt, desc)
     const q = query(collection(db, 'consultations'), orderBy('createdAt', 'desc'));
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -49,51 +46,46 @@ export function AdminModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
       setLoading(false);
     }, (err: any) => {
       console.error(err);
-      if (err.message && err.message.includes('permission')) {
-        setError(`권한이 없습니다 (파이어베이스 Rules 이메일 권한 설정 확인 필요).`);
-      } else {
-        setError(`데이터를 불러오는데 실패했습니다: ${err.message}`);
-      }
+      setError(`데이터 권한 에러: 파이어베이스 규칙을 확인하세요.`);
       setLoading(false);
     });
 
     return () => unsubscribe();
   }, [isOpen, user]);
 
+  // 3. 만약 로그인이 풀렸거나 없는 경우를 위한 수동 로그인 함수
+  const handleLogin = () => {
+    const provider = new GoogleAuthProvider();
+    signInWithRedirect(auth, provider);
+  };
+
   const handleLogout = async () => {
     await signOut(auth);
     setConsultations([]);
-    onClose(); // 로그아웃 시 창 닫기
+    onClose();
   };
 
-  // 3. 삭제 기능
   const handleDelete = async (id: string, name: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!window.confirm(`${name} 고객님의 상담 내역을 정말 삭제하시겠습니까?\n삭제된 데이터는 복구할 수 없습니다.`)) return;
+    if (!window.confirm(`${name} 고객님의 상담 내역을 정말 삭제하시겠습니까?`)) return;
     try {
       await deleteDoc(doc(db, 'consultations', id));
-      alert("삭제되었습니다.");
     } catch (err) {
       console.error(err);
       alert('삭제 실패');
     }
   };
 
-  // 4. 완료/대기 토글 기능
   const handleToggleStatus = async (id: string, currentStatus: string | undefined, e: React.MouseEvent) => {
     e.stopPropagation();
     const newStatus = currentStatus === 'completed' ? 'pending' : 'completed';
     try {
-      await updateDoc(doc(db, 'consultations', id), {
-        status: newStatus
-      });
+      await updateDoc(doc(db, 'consultations', id), { status: newStatus });
     } catch (err) {
       console.error(err);
-      alert('상태 변경 중 오류가 발생했습니다.');
     }
   };
 
-  // 5. 접수 시간 이쁘게 바꾸는 함수 (기존 유지)
   const formatDate = (timestamp: any) => {
     if (!timestamp) return '';
     const date = new Date(timestamp.toMillis());
@@ -122,21 +114,27 @@ export function AdminModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
 
         {error && <div className="bg-red-50 border border-red-200 text-red-600 p-4 rounded-xl mb-6 font-medium break-keep">{error}</div>}
 
-        {!user ? (
+        {loading ? (
+          // 구글 로그인 상태를 확인 중일 때 나오는 로딩창
+          <div className="flex-1 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        ) : !user ? (
+          // 만약 로그인이 안 되어 있다면 로그인 버튼을 강제로 띄워줍니다!
           <div className="flex-1 flex flex-col items-center justify-center py-12">
             <div className="bg-blue-50 text-blue-800 p-4 rounded-full mb-6">
               <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
             </div>
-            <h3 className="text-xl font-bold mb-2">접근 권한이 없습니다</h3>
-            <p className="text-gray-500 mb-4 text-center max-w-sm">
-              로그인을 다시 시도하거나 메인 화면에서 관리자 계정으로 로그인해 주세요.
+            <h3 className="text-xl font-bold mb-2">관리자 인증이 필요합니다</h3>
+            <p className="text-gray-500 mb-8 text-center max-w-sm">
+              상담 내역을 확인하려면 아래 버튼을 눌러 관리자 구글 계정으로 로그인해 주세요.
             </p>
-          </div>
-        ) : loading ? (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <button onClick={handleLogin} className="bg-gray-900 text-white font-bold px-8 py-4 rounded-xl hover:bg-gray-800 transition-all shadow-lg hover:shadow-xl">
+              Google 계정으로 로그인
+            </button>
           </div>
         ) : (
+          // 로그인 성공 시 뜨는 실제 표 테이블 화면
           <div className="flex-1 overflow-y-auto scrollbar-hide rounded-xl border border-gray-200">
             <table className="w-full text-left border-collapse">
               <thead className="bg-gray-50 sticky top-0 z-10">
