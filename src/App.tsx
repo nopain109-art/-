@@ -1,21 +1,9 @@
-아하, 어떤 상황인지 딱 이해했습니다! 😭
-
-구글 로그인을 하려고 버튼을 누르면 구글 로그인 페이지로 갔다가 다시 랜딩 페이지(메인 화면)로 돌아오기만 하고, 관리자 모달창(AdminModal)이 자동으로 열리지 않아서 답답하셨던 거군요!
-
-원인은 리디렉션 로그인(getRedirectResult) 처리가 React의 컴포넌트 생명주기와 타이밍이 맞지 않아, 로그인은 성공했음에도 불구하고 setIsAdminOpen(true)를 실행하는 시점을 놓치기 때문입니다.
-
-이를 확실하게 해결하려면, 리디렉션 결과를 기다리는 동안 로딩 상태를 보여주고, 로그인이 확인되면 안전하게 모달을 열어주도록 코드를 보완해야 합니다.
-
-App.tsx 코드를 아래 내용으로 다시 통째로 복사해서 덮어씌워 보세요. 이번엔 제대로 열릴 겁니다!
-
-수정된 App.tsx 전체 코드
-TypeScript
 import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowRight, CheckCircle2, ShieldCheck, X, Loader2 } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { getRedirectResult, onAuthStateChanged } from 'firebase/auth';
+import { getRedirectResult } from 'firebase/auth';
 import { db, auth } from './lib/firebase';
 import { AdminModal } from './AdminModal';
 import { ReviewSection } from './ReviewSection';
@@ -29,7 +17,6 @@ export default function App() {
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isAuthChecking, setIsAuthChecking] = useState(true); // 인증 체크 로딩 상태 추가
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -37,48 +24,21 @@ export default function App() {
     inquiry: ''
   });
 
-  const adminEmail = "nopain109@gmail.com"; // 관리자 이메일 변수 통일
-
-  // 로그인 후 리디렉션 감지 및 로그인 상태 유지를 위한 이펙트
   useEffect(() => {
-    let isMounted = true;
+    if (sessionStorage.getItem('admin_modal_open') === 'true') {
+      setIsAdminOpen(true);
+      sessionStorage.removeItem('admin_modal_open');
+    }
 
-    // 1. 구글 리디렉션 로그인 결과 확인
     getRedirectResult(auth)
       .then((result) => {
-        if (!isMounted) return;
-        
-        if (result && result.user) {
-          if (result.user.email === adminEmail) {
-            setIsAdminOpen(true);
-          } else {
-            alert("관리자 권한이 없는 계정입니다: " + result.user.email);
-          }
+        if (result) {
+          setIsAdminOpen(true);
         }
       })
       .catch((error) => {
         console.error("Redirect login error:", error);
-      })
-      .finally(() => {
-        if (isMounted) setIsAuthChecking(false);
       });
-
-    // 2. 새로고침 및 세션 유지 상태 감지
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (!isMounted) return;
-      
-      if (user) {
-        if (user.email === adminEmail) {
-          setIsAdminOpen(true);
-        }
-      }
-      setIsAuthChecking(false);
-    });
-
-    return () => {
-      isMounted = false;
-      unsubscribe();
-    };
   }, []);
 
   const timeOptions = Array.from({ length: 24 }, (_, i) => {
@@ -185,8 +145,8 @@ export default function App() {
                   {
                       opacity: 1, y: 0,
                       duration: 0.8,
-                      stagger: 0.15,
-                      ease: "power3.out",
+                      stagger: 0.15, // Slower stagger for impact
+                      ease: "power3.out", // Adjusted ease for impact
                       scrollTrigger: { trigger: wrapper, start: "top 85%" }
                   }
               );
@@ -260,7 +220,6 @@ export default function App() {
 
   return (
     <>
-      {/* 로딩 화면 */}
       <div id="loader">
         <div className="text-xl md:text-3xl font-bold mb-8 tracking-[0.5em] opacity-50 text-center text-white">KOREA INSURANCE REPRESENTATIVE</div>
         <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/Flag_of_South_Korea.svg" alt="태극기" className="w-48 h-32 md:w-64 md:h-48 mx-auto mb-10 opacity-90 shadow-2xl transition-transform hover:scale-105" />
@@ -268,22 +227,17 @@ export default function App() {
         <div className="text-4xl md:text-6xl font-black mt-8 text-white">보험국가대표</div>
       </div>
 
-      {/* 커서 도트 */}
       <div className="cursor-dot hidden md:block" ref={cursorDotRef}></div>
 
-      {/* 네비게이션 */}
       <nav className="fixed top-0 w-full z-50 px-6 py-4 md:px-12 flex justify-end items-center bg-white/80 backdrop-blur-md border-b border-gray-50 h-[72px]">
         <div className="flex items-center gap-4 md:gap-8 text-sm font-bold text-gray-500">
           <a href="#about" className="hidden md:block hover:text-blue-900 transition-colors">차별화된 전문성</a>
           <a href="#vision" className="hidden md:block hover:text-blue-900 transition-colors">설계 철학</a>
           <button onClick={openModal} className="hidden md:block transition-colors bg-blue-600 text-white rounded-full px-5 py-2 hover:bg-blue-700 shadow-md">상담 신청</button>
-          <button onClick={() => setIsAdminOpen(true)} className="whitespace-nowrap hidden md:block text-gray-400 hover:text-gray-600 transition-colors">
-            {isAuthChecking ? '확인 중...' : '관리자 메뉴'}
-          </button>
+          <button onClick={() => setIsAdminOpen(true)} className="whitespace-nowrap hidden md:block text-gray-400 hover:text-gray-600 transition-colors">관리자 메뉴</button>
         </div>
       </nav>
 
-      {/* 히어로 섹션 */}
       <section className="relative min-h-[75vh] flex flex-col justify-center items-center px-6 overflow-hidden pt-12 pb-48">
         <div className="max-w-6xl w-full text-center flex flex-col items-center">
           <div className="relative mb-0 w-[14rem] h-[14rem] md:w-[20rem] md:h-[20rem] lg:w-[26rem] lg:h-[26rem] reveal lg:-mb-6 flex items-center justify-center">
@@ -384,7 +338,6 @@ export default function App() {
         </div>
       </section>
 
-      {/* 마키 텍스트 슬라이더 */}
       <div className="py-5 bg-accent-blue text-white overflow-hidden select-none border-y border-white/10">
         <div className="marquee-container font-bold text-sm tracking-widest">
           {[
@@ -406,7 +359,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* 프로필 섹션 */}
       <section id="about" className="py-32 px-6 bg-white">
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-16 items-center">
           <div className="w-full lg:w-5/12 relative reveal flex justify-center order-2 lg:order-1 pt-8 lg:pt-0">
@@ -434,7 +386,7 @@ export default function App() {
 
             <div className="space-y-6 text-gray-600 text-[1.1rem]">
               <p className="about-typewriter bg-gray-50 p-6 rounded-2xl italic text-gray-700 leading-relaxed font-medium">
-                {"\"수많은 환자분들을 보며 느꼈습니다. 제대로 된 보험 하나가 삶을 어떻게 지탱해 주고, 반대로 잘못된 설계가 얼마나 큰 비극이 되는지.. 저 또한 예기치 못한 사고 and 암으로 삶의 무게를 온몸으로 느껴보았습니다. 그렇기에 더욱 잘 알고있습니다. 능력있는 설계사를 만나는것이 얼마나 중요한지를요. 견고한 양심과 정직함으로 신뢰를 쌓아가겠습니다.\"".split('').map((char, i) => (
+                {"\"수많은 환자분들을 보며 느꼈습니다. 제대로 된 보험 하나가 삶을 어떻게 지탱해 주고, 반대로 잘못된 설계가 얼마나 큰 비극이 되는지.. 저 또한 예기치 못한 사고와 암으로 삶의 무게를 온몸으로 느껴보았습니다. 그렇기에 더욱 잘 알고있습니다. 능력있는 설계사를 만나는것이 얼마나 중요한지를요. 견고한 양심과 정직함으로 신뢰를 쌓아가겠습니다.\"".split('').map((char, i) => (
                   <span key={`about-${i}`} className="about-char opacity-0">{char}</span>
                 ))}
               </p>
@@ -470,7 +422,6 @@ export default function App() {
         </div>
       </section>
 
-      {/* 철학 및 리뷰 섹션 */}
       <section id="vision" className="py-32 bg-gray-900 text-white px-6">
         <div className="max-w-5xl mx-auto text-center">
           <h2 className="text-5xl md:text-7xl font-bold mb-20 tracking-tight reveal leading-[1.3] md:leading-tight">
@@ -513,7 +464,6 @@ export default function App() {
         </div>
       </section>
 
-      {/* 연락처 및 QR 코드 섹션 */}
       <section id="contact" className="py-40 px-6 text-center">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-5xl md:text-8xl font-black tracking-tighter mb-12 reveal">
@@ -568,7 +518,7 @@ export default function App() {
         nopain1009@naver.com
       </footer>
 
-      {/* 상담 예약 모달 창 */}
+      {/* Modal */}
       {isQRModalOpen && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto" onClick={() => setIsQRModalOpen(false)}>
           <div className="bg-white p-8 md:p-12 rounded-[2rem] shadow-2xl flex flex-col gap-6 relative max-w-lg w-full my-auto" onClick={e => e.stopPropagation()}>
@@ -641,7 +591,7 @@ export default function App() {
         </div>
       )}
 
-      {/* 관리자 모달 연동 */}
+      {/* Admin Modal embedded to allow instant access from homepage */}
       <AdminModal isOpen={isAdminOpen} onClose={() => setIsAdminOpen(false)} />
     </>
   );
