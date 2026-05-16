@@ -4,6 +4,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowRight, CheckCircle2, ShieldCheck, X, Loader2 } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from './lib/firebase';
+import emailjs from '@emailjs/browser';
 import { AdminModal } from './AdminModal';
 import { ReviewSection } from './ReviewSection';
 import confetti from 'canvas-confetti';
@@ -43,6 +44,7 @@ export default function App() {
         status: 'pending',
         createdAt: serverTimestamp()
       });
+      await emailjs.send('service_w5tjlf4', 'template_6is1zi8', { name: formData.name, phone: formData.phone, time: formData.timeRange, message: formData.inquiry || '문의사항 없음' });
       alert('성공적으로 접수되었습니다. 순차적으로 연락드리겠습니다.');
       setIsQRModalOpen(false);
       setFormData({ name: '', phone: '', timeRange: '10:00 - 11:00', inquiry: '' });

@@ -36,7 +36,7 @@ service cloud.firestore {
       allow create: if isValidConsultation(incoming()) && isValidId(consultationId);
       allow get: if isAdmin() && isValidId(consultationId);
       allow list: if isAdmin();
-      allow delete: if isAdmin() && isValidId(consultationId);
+      allow delete: if isAdmin();
       allow update: if (
         isAdmin() && 
         isValidId(consultationId) && 
