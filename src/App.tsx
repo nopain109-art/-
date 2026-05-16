@@ -1,3 +1,15 @@
+아하, 어떤 상황인지 딱 이해했습니다! 😭
+
+구글 로그인을 하려고 버튼을 누르면 구글 로그인 페이지로 갔다가 다시 랜딩 페이지(메인 화면)로 돌아오기만 하고, 관리자 모달창(AdminModal)이 자동으로 열리지 않아서 답답하셨던 거군요!
+
+원인은 리디렉션 로그인(getRedirectResult) 처리가 React의 컴포넌트 생명주기와 타이밍이 맞지 않아, 로그인은 성공했음에도 불구하고 setIsAdminOpen(true)를 실행하는 시점을 놓치기 때문입니다.
+
+이를 확실하게 해결하려면, 리디렉션 결과를 기다리는 동안 로딩 상태를 보여주고, 로그인이 확인되면 안전하게 모달을 열어주도록 코드를 보완해야 합니다.
+
+App.tsx 코드를 아래 내용으로 다시 통째로 복사해서 덮어씌워 보세요. 이번엔 제대로 열릴 겁니다!
+
+수정된 App.tsx 전체 코드
+TypeScript
 import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -17,6 +29,7 @@ export default function App() {
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAuthChecking, setIsAuthChecking] = useState(true); // 인증 체크 로딩 상태 추가
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -24,13 +37,18 @@ export default function App() {
     inquiry: ''
   });
 
+  const adminEmail = "nopain109@gmail.com"; // 관리자 이메일 변수 통일
+
   // 로그인 후 리디렉션 감지 및 로그인 상태 유지를 위한 이펙트
   useEffect(() => {
-    // 1. 구글 로그인 후 리디렉션되어 돌아왔을 때 처리
+    let isMounted = true;
+
+    // 1. 구글 리디렉션 로그인 결과 확인
     getRedirectResult(auth)
       .then((result) => {
+        if (!isMounted) return;
+        
         if (result && result.user) {
-          const adminEmail = "nopain109@gmail.com"; // 관리자 이메일 반영
           if (result.user.email === adminEmail) {
             setIsAdminOpen(true);
           } else {
@@ -40,19 +58,27 @@ export default function App() {
       })
       .catch((error) => {
         console.error("Redirect login error:", error);
+      })
+      .finally(() => {
+        if (isMounted) setIsAuthChecking(false);
       });
 
-    // 2. 새로고침 시 이미 로그인 상태가 유지되고 있는지 감지
+    // 2. 새로고침 및 세션 유지 상태 감지
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!isMounted) return;
+      
       if (user) {
-        const adminEmail = "nopain109@gmail.com"; // 관리자 이메일 반영
         if (user.email === adminEmail) {
           setIsAdminOpen(true);
         }
       }
+      setIsAuthChecking(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, []);
 
   const timeOptions = Array.from({ length: 24 }, (_, i) => {
@@ -251,7 +277,9 @@ export default function App() {
           <a href="#about" className="hidden md:block hover:text-blue-900 transition-colors">차별화된 전문성</a>
           <a href="#vision" className="hidden md:block hover:text-blue-900 transition-colors">설계 철학</a>
           <button onClick={openModal} className="hidden md:block transition-colors bg-blue-600 text-white rounded-full px-5 py-2 hover:bg-blue-700 shadow-md">상담 신청</button>
-          <button onClick={() => setIsAdminOpen(true)} className="whitespace-nowrap hidden md:block text-gray-400 hover:text-gray-600 transition-colors">관리자 메뉴</button>
+          <button onClick={() => setIsAdminOpen(true)} className="whitespace-nowrap hidden md:block text-gray-400 hover:text-gray-600 transition-colors">
+            {isAuthChecking ? '확인 중...' : '관리자 메뉴'}
+          </button>
         </div>
       </nav>
 
