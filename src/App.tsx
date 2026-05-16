@@ -17,6 +17,7 @@ export default function App() {
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -44,10 +45,19 @@ export default function App() {
         status: 'pending',
         createdAt: serverTimestamp()
       });
-      await emailjs.send('service_w5tjlf4', 'template_6is1zi8', { name: formData.name, phone: formData.phone, time: formData.timeRange, message: formData.inquiry || '문의사항 없음' });
-      alert('성공적으로 접수되었습니다. 순차적으로 연락드리겠습니다.');
-      setIsQRModalOpen(false);
-      setFormData({ name: '', phone: '', timeRange: '10:00 - 11:00', inquiry: '' });
+      
+      try {
+        await emailjs.send('service_w5tjlf4', 'template_6is1zi8', { name: formData.name, phone: formData.phone, time: formData.timeRange, message: formData.inquiry || '문의사항 없음' });
+      } catch (emailError) {
+        console.error("이메일 발송 실패: ", emailError);
+      }
+      
+      setSubmitSuccess(true);
+      setTimeout(() => {
+        setIsQRModalOpen(false);
+        setSubmitSuccess(false);
+        setFormData({ name: '', phone: '', timeRange: '10:00 - 11:00', inquiry: '' });
+      }, 3000);
     } catch (err) {
       console.error(err);
       alert('오류가 발생했습니다. 다시 시도해주세요.');
@@ -504,17 +514,27 @@ export default function App() {
 
       {/* Modal */}
       {isQRModalOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto" onClick={() => setIsQRModalOpen(false)}>
-          <div className="bg-white p-8 md:p-12 rounded-[2rem] shadow-2xl flex flex-col gap-6 relative max-w-lg w-full my-auto" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="bg-white p-8 md:p-12 rounded-[2rem] shadow-2xl flex flex-col gap-6 relative max-w-lg w-full my-auto">
             <button onClick={() => setIsQRModalOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 transition-colors">
               <X className="w-6 h-6" />
             </button>
-            <div className="text-left space-y-2 mb-2">
-              <h3 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">상담 신청</h3>
-              <p className="text-sm font-semibold text-blue-600">전문적인 보장 자산을 설계해 드립니다.</p>
-            </div>
-            
-            <form onSubmit={handleConsultationSubmit} className="space-y-5">
+            {submitSuccess ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
+                <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-4">
+                  <CheckCircle2 className="w-10 h-10 text-green-500" />
+                </div>
+                <h3 className="text-2xl font-bold tracking-tight text-gray-900">상담이 정상적으로 접수되었습니다.</h3>
+                <p className="text-gray-500">확인 후 빠른 시일 내에 연락드리겠습니다.</p>
+              </div>
+            ) : (
+              <>
+                <div className="text-left space-y-2 mb-2">
+                  <h3 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">상담 신청</h3>
+                  <p className="text-sm font-semibold text-blue-600">전문적인 보장 자산을 설계해 드립니다.</p>
+                </div>
+                
+                <form onSubmit={handleConsultationSubmit} className="space-y-5">
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1.5">이름 *</label>
                 <input 
@@ -571,6 +591,8 @@ export default function App() {
                 {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> : '상담 신청하기'}
               </button>
             </form>
+            </>
+            )}
           </div>
         </div>
       )}
