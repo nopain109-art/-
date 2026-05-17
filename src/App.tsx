@@ -387,7 +387,7 @@ export default function App() {
 
             <div className="space-y-6 text-gray-600 text-[1.1rem]">
               <p className="about-typewriter bg-gray-50 p-6 rounded-2xl italic text-gray-700 leading-relaxed font-medium">
-                {"\"수많은 환자분들을 보며 느꼈습니다. 제대로 된 보험 하나가 삶을 어떻게 지탱해 주고, 반대로 잘못된 설계가 얼마나 큰 비극이 되는지.. 저 또한 예기치 못한 사고 and 암으로 삶의 무게를 온몸으로 느껴보았습니다. 그렇기에 더욱 잘 알고있습니다. 능력있는 설계사를 만나는것이 얼마나 중요한지를요. 견고한 양심과 정직함으로 신뢰를 쌓아가겠습니다.\"".split('').map((char, i) => (
+                {"\"수많은 환자분들을 보며 느꼈습니다. 제대로 된 보험 하나가 삶을 어떻게 지탱해 주고, 반대로 잘못된 설계가 얼마나 큰 비극이 되는지.. 저 또한 예기치 못한 사고와 암으로 삶의 무게를 온몸으로 느껴보았습니다. 그렇기에 더욱 잘 알고있습니다. 능력있는 설계사를 만나는것이 얼마나 중요한지를요. 견고한 양심과 정직함으로 신뢰를 쌓아가겠습니다.\"".split('').map((char, i) => (
                   <span key={`about-${i}`} className="about-char opacity-0">{char}</span>
                 ))}
               </p>
