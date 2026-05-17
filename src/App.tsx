@@ -11,9 +11,6 @@ import confetti from 'canvas-confetti';
 
 gsap.registerPlugin(ScrollTrigger);
 
-// 🌟 EmailJS Public Key 연결 (완료)
-emailjs.init("sF2k0GI508F0UvDEP");
-
 export default function App() {
   const cursorDotRef = useRef<HTMLDivElement>(null);
   const [loadCount, setLoadCount] = useState(0);
@@ -50,13 +47,12 @@ export default function App() {
       });
       
       try {
-        // 🌟 템플릿 변수 {{time}}에 맞추어 Key 이름을 'time'으로 매칭 (완료)
-        await emailjs.send('service_w5tjlf4', 'template_6is1zi8', { 
+        await emailjs.send('service_w5tjlf4', 'template_1uk1j0g', { 
           name: formData.name, 
           phone: formData.phone, 
           time: formData.timeRange, 
           message: formData.inquiry || '문의사항 없음' 
-        });
+        }, 'sF2k0GI508F0UvDEP');
       } catch (emailError) {
         console.error("이메일 발송 실패: ", emailError);
       }
@@ -389,7 +385,7 @@ export default function App() {
 
             <div className="space-y-6 text-gray-600 text-[1.1rem]">
               <p className="about-typewriter bg-gray-50 p-6 rounded-2xl italic text-gray-700 leading-relaxed font-medium">
-                {"\"수많은 환자분들을 보며 느꼈습니다. 제대로 된 보험 하나가 삶을 어떻게 지탱해 주고, 반대로 잘못된 설계가 얼마나 큰 비극이 되는지.. 저 또한 예기치 못한 사고 and 암으로 삶의 무게를 온몸으로 느껴보았습니다. 그렇기에 더욱 잘 알고있습니다. 능력있는 설계사를 만나는것이 얼마나 중요한지를요. 견고한 양심과 정직함으로 신뢰를 쌓아가겠습니다.\"".split('').map((char, i) => (
+                {"\"수많은 환자분들을 보며 느꼈습니다. 제대로 된 보험 하나가 삶을 어떻게 지탱해 주고, 반대로 잘못된 설계가 얼마나 큰 비극이 되는지.. 저 또한 예기치 못한 사고와 암으로 삶의 무게를 온몸으로 느껴보았습니다. 그렇기에 더욱 잘 알고있습니다. 능력있는 설계사를 만나는것이 얼마나 중요한지를요. 견고한 양심과 정직함으로 신뢰를 쌓아가겠습니다.\"".split('').map((char, i) => (
                   <span key={`about-${i}`} className="about-char opacity-0">{char}</span>
                 ))}
               </p>
@@ -490,26 +486,26 @@ export default function App() {
             <div className="flex flex-col md:flex-row gap-8 lg:gap-12 items-center justify-center mt-4 w-full">
               <div className="space-y-4 flex flex-col items-center">
                 <p className="text-gray-500 font-bold tracking-widest text-xl">카카오톡</p>
-                <a href="http://pf.kakao.com/_gxiHKX" target="_blank" rel="noreferrer" className="text-blue-600 font-medium hover:underline text-sm md:text-base cursor-pointer">http://pf.kakao.com/_gxiHKX</a>
                 <a href="http://pf.kakao.com/_gxiHKX" target="_blank" rel="noreferrer" className="w-32 h-32 md:w-44 md:h-44 p-2 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer block">
                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=http://pf.kakao.com/_gxiHKX&margin=0" alt="카카오톡 상담 QR 코드" className="w-full h-full object-cover mix-blend-multiply hover:scale-105 transition-transform" />
                 </a>
+                <p className="text-xs text-gray-400 font-medium">QR코드를 누르면 이동합니다.</p>
               </div>
               
               <div className="space-y-4 flex flex-col items-center">
                 <p className="text-gray-500 font-bold tracking-widest text-xl">유튜브</p>
-                <a href="https://www.youtube.com/@보험국대" target="_blank" rel="noreferrer" className="text-blue-600 font-medium hover:underline text-sm md:text-base cursor-pointer">https://www.youtube.com/@보험국대</a>
                 <a href="https://www.youtube.com/@보험국대" target="_blank" rel="noreferrer" className="w-32 h-32 md:w-44 md:h-44 p-2 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer block">
                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://www.youtube.com/@보험국대&margin=0" alt="유튜브 QR 코드" className="w-full h-full object-cover mix-blend-multiply hover:scale-105 transition-transform" />
                 </a>
+                <p className="text-xs text-gray-400 font-medium">QR코드를 누르면 이동합니다.</p>
               </div>
 
               <div className="space-y-4 flex flex-col items-center">
                 <p className="text-gray-500 font-bold tracking-widest text-xl">블로그</p>
-                <a href="https://blog.naver.com/nopain1009" target="_blank" rel="noreferrer" className="text-blue-600 font-medium hover:underline text-sm md:text-base cursor-pointer">https://blog.naver.com/nopain1009</a>
                 <a href="https://blog.naver.com/nopain1009" target="_blank" rel="noreferrer" className="w-32 h-32 md:w-44 md:h-44 p-2 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer block">
                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://blog.naver.com/nopain1009&margin=0" alt="블로그 QR 코드" className="w-full h-full object-cover mix-blend-multiply hover:scale-105 transition-transform" />
                 </a>
+                <p className="text-xs text-gray-400 font-medium">QR코드를 누르면 이동합니다.</p>
               </div>
             </div>
             <p className="text-sm text-gray-500 bg-gray-50 px-5 py-3 rounded-full mt-6 border border-gray-100 shadow-sm">성함과 연락처를 남겨주시면 순차적으로 연락드리겠습니다.</p>
