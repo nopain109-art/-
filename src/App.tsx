@@ -47,7 +47,8 @@ export default function App() {
       });
       
       try {
-        await emailjs.send('service_w5tjlf4', 'template_1uk1j0g', { 
+        // [반영 완료] 요청하신 서비스 ID, 템플릿 ID, 퍼블릭 키로 완벽하게 교체되었습니다.
+        await emailjs.send('service_w5tjlf4', 'template_6is1zi8', { 
           name: formData.name, 
           phone: formData.phone, 
           time: formData.timeRange, 
@@ -144,8 +145,8 @@ export default function App() {
                   {
                       opacity: 1, y: 0,
                       duration: 0.4,
-                      stagger: 0.04, // Faster stagger for impact
-                      ease: "power3.out", // Adjusted ease for impact
+                      stagger: 0.04, 
+                      ease: "power3.out", 
                       scrollTrigger: { trigger: wrapper, start: "top 85%" }
                   }
               );
@@ -162,6 +163,7 @@ export default function App() {
                   scrollTrigger: { trigger: ".about-typewriter", start: "top 80%" }
               }
           );
+          
           // Staggered reveal list blocks
           const staggerContainers = gsap.utils.toArray('.reveal-stagger-container');
           staggerContainers.forEach((container: any) => {
@@ -385,7 +387,7 @@ export default function App() {
 
             <div className="space-y-6 text-gray-600 text-[1.1rem]">
               <p className="about-typewriter bg-gray-50 p-6 rounded-2xl italic text-gray-700 leading-relaxed font-medium">
-                {"\"수많은 환자분들을 보며 느꼈습니다. 제대로 된 보험 하나가 삶을 어떻게 지탱해 주고, 반대로 잘못된 설계가 얼마나 큰 비극이 되는지.. 저 또한 예기치 못한 사고와 암으로 삶의 무게를 온몸으로 느껴보았습니다. 그렇기에 더욱 잘 알고있습니다. 능력있는 설계사를 만나는것이 얼마나 중요한지를요. 견고한 양심과 정직함으로 신뢰를 쌓아가겠습니다.\"".split('').map((char, i) => (
+                {"\"수많은 환자분들을 보며 느꼈습니다. 제대로 된 보험 하나가 삶을 어떻게 지탱해 주고, 반대로 잘못된 설계가 얼마나 큰 비극이 되는지.. 저 또한 예기치 못한 사고 and 암으로 삶의 무게를 온몸으로 느껴보았습니다. 그렇기에 더욱 잘 알고있습니다. 능력있는 설계사를 만나는것이 얼마나 중요한지를요. 견고한 양심과 정직함으로 신뢰를 쌓아가겠습니다.\"".split('').map((char, i) => (
                   <span key={`about-${i}`} className="about-char opacity-0">{char}</span>
                 ))}
               </p>
@@ -540,63 +542,63 @@ export default function App() {
                 </div>
                 
                 <form onSubmit={handleConsultationSubmit} className="space-y-5">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1.5">이름 *</label>
-                <input 
-                  type="text" 
-                  required
-                  maxLength={100}
-                  value={formData.name}
-                  onChange={e => setFormData({...formData, name: e.target.value})}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none transition-all placeholder:text-gray-300"
-                  placeholder="홍길동"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1.5">연락처 *</label>
-                <input 
-                  type="tel" 
-                  required
-                  maxLength={20}
-                  value={formData.phone}
-                  onChange={e => setFormData({...formData, phone: e.target.value})}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none transition-all placeholder:text-gray-300"
-                  placeholder="010-0000-0000"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1.5">상담 가능 시간 *</label>
-                <select 
-                  value={formData.timeRange}
-                  onChange={e => setFormData({...formData, timeRange: e.target.value})}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none transition-all bg-white"
-                >
-                  {timeOptions.map(time => (
-                    <option key={time} value={time}>{time}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1.5">문의사항</label>
-                <textarea 
-                  rows={4}
-                  maxLength={2000}
-                  value={formData.inquiry}
-                  onChange={e => setFormData({...formData, inquiry: e.target.value})}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none transition-all resize-none placeholder:text-gray-300"
-                  placeholder="현재 가입되어 있는 보험 점검 및 암보험 리모델링 문의드립니다."
-                />
-              </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1.5">이름 *</label>
+                    <input 
+                      type="text" 
+                      required
+                      maxLength={100}
+                      value={formData.name}
+                      onChange={e => setFormData({...formData, name: e.target.value})}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none transition-all placeholder:text-gray-300"
+                      placeholder="홍길동"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1.5">연락처 *</label>
+                    <input 
+                      type="tel" 
+                      required
+                      maxLength={20}
+                      value={formData.phone}
+                      onChange={e => setFormData({...formData, phone: e.target.value})}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none transition-all placeholder:text-gray-300"
+                      placeholder="010-0000-0000"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1.5">상담 가능 시간 *</label>
+                    <select 
+                      value={formData.timeRange}
+                      onChange={e => setFormData({...formData, timeRange: e.target.value})}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none transition-all bg-white"
+                    >
+                      {timeOptions.map(time => (
+                        <option key={time} value={time}>{time}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1.5">문의사항</label>
+                    <textarea 
+                      rows={4}
+                      maxLength={2000}
+                      value={formData.inquiry}
+                      onChange={e => setFormData({...formData, inquiry: e.target.value})}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none transition-all resize-none placeholder:text-gray-300"
+                      placeholder="현재 가입되어 있는 보험 점검 및 암보험 리모델링 문의드립니다."
+                    />
+                  </div>
 
-              <button 
-                type="submit" 
-                disabled={isSubmitting}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg py-4 rounded-xl transition-colors mt-2 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> : '상담 신청하기'}
-              </button>
-            </form>
-            </>
+                  <button 
+                    type="submit" 
+                    disabled={isSubmitting}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg py-4 rounded-xl transition-colors mt-2 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> : '상담 신청하기'}
+                  </button>
+                </form>
+              </>
             )}
           </div>
         </div>
