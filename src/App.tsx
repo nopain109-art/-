@@ -25,11 +25,6 @@ export default function App() {
     inquiry: ''
   });
 
-  // [수정 완료] 앱이 실행될 때 제공해주신 Public Key로 EmailJS를 초기화합니다.
-  useEffect(() => {
-    emailjs.init("sF2k0GI508F0UvDEP");
-  }, []);
-
   const timeOptions = Array.from({ length: 24 }, (_, i) => {
     const hour = i.toString().padStart(2, '0');
     const nextHour = (i + 1) === 24 ? '00' : (i + 1).toString().padStart(2, '0');
@@ -38,7 +33,7 @@ export default function App() {
 
   const handleConsultationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.phone) return alert("이름 and 연락처를 입력해주세요.");
+    if (!formData.name || !formData.phone) return alert("이름과 연락처를 입력해주세요.");
     
     setIsSubmitting(true);
     try {
@@ -52,7 +47,12 @@ export default function App() {
       });
       
       try {
-        await emailjs.send('service_w5tjlf4', 'template_6is1zi8', { name: formData.name, phone: formData.phone, time: formData.timeRange, message: formData.inquiry || '문의사항 없음' });
+        await emailjs.send('service_w5tjlf4', 'template_1uk1j0g', { 
+          name: formData.name, 
+          phone: formData.phone, 
+          time: formData.timeRange, 
+          message: formData.inquiry || '문의사항 없음' 
+        }, 'sF2k0GI508F0UvDEP');
       } catch (emailError) {
         console.error("이메일 발송 실패: ", emailError);
       }
@@ -486,26 +486,26 @@ export default function App() {
             <div className="flex flex-col md:flex-row gap-8 lg:gap-12 items-center justify-center mt-4 w-full">
               <div className="space-y-4 flex flex-col items-center">
                 <p className="text-gray-500 font-bold tracking-widest text-xl">카카오톡</p>
-                <a href="http://pf.kakao.com/_gxiHKX" target="_blank" rel="noreferrer" className="text-blue-600 font-medium hover:underline text-sm md:text-base cursor-pointer">http://pf.kakao.com/_gxiHKX</a>
                 <a href="http://pf.kakao.com/_gxiHKX" target="_blank" rel="noreferrer" className="w-32 h-32 md:w-44 md:h-44 p-2 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer block">
                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=http://pf.kakao.com/_gxiHKX&margin=0" alt="카카오톡 상담 QR 코드" className="w-full h-full object-cover mix-blend-multiply hover:scale-105 transition-transform" />
                 </a>
+                <p className="text-xs text-gray-400 font-medium">QR코드를 누르면 이동합니다.</p>
               </div>
               
               <div className="space-y-4 flex flex-col items-center">
                 <p className="text-gray-500 font-bold tracking-widest text-xl">유튜브</p>
-                <a href="https://www.youtube.com/@보험국대" target="_blank" rel="noreferrer" className="text-blue-600 font-medium hover:underline text-sm md:text-base cursor-pointer">https://www.youtube.com/@보험국대</a>
                 <a href="https://www.youtube.com/@보험국대" target="_blank" rel="noreferrer" className="w-32 h-32 md:w-44 md:h-44 p-2 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer block">
                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://www.youtube.com/@보험국대&margin=0" alt="유튜브 QR 코드" className="w-full h-full object-cover mix-blend-multiply hover:scale-105 transition-transform" />
                 </a>
+                <p className="text-xs text-gray-400 font-medium">QR코드를 누르면 이동합니다.</p>
               </div>
 
               <div className="space-y-4 flex flex-col items-center">
                 <p className="text-gray-500 font-bold tracking-widest text-xl">블로그</p>
-                <a href="https://blog.naver.com/nopain1009" target="_blank" rel="noreferrer" className="text-blue-600 font-medium hover:underline text-sm md:text-base cursor-pointer">https://blog.naver.com/nopain1009</a>
                 <a href="https://blog.naver.com/nopain1009" target="_blank" rel="noreferrer" className="w-32 h-32 md:w-44 md:h-44 p-2 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer block">
                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://blog.naver.com/nopain1009&margin=0" alt="블로그 QR 코드" className="w-full h-full object-cover mix-blend-multiply hover:scale-105 transition-transform" />
                 </a>
+                <p className="text-xs text-gray-400 font-medium">QR코드를 누르면 이동합니다.</p>
               </div>
             </div>
             <p className="text-sm text-gray-500 bg-gray-50 px-5 py-3 rounded-full mt-6 border border-gray-100 shadow-sm">성함과 연락처를 남겨주시면 순차적으로 연락드리겠습니다.</p>
